@@ -56,47 +56,54 @@ class ExpensesDataYearKey with _$ExpensesDataYearKey implements Comparable {
 
 /// A facade for persistent storage of [ExpensesData] using ReaxDB.
 class ExpensesDataRepository {
-  final LazyBox<Map> _box;
+  final LazyBox<Map> _expensesBox;
+  final LazyBox<Set> _yearsBox;
 
-  ExpensesDataRepository._(LazyBox<Map> box) : _box = box;
+  ExpensesDataRepository._(LazyBox<Map> expensesBox, LazyBox<Set> yearsBox)
+    : _expensesBox = expensesBox,
+      _yearsBox = yearsBox;
 
   /// Initializes an [ExpensesDataRepository].
   static Future<ExpensesDataRepository> init({Directory? directory}) async {
-    final box = directory != null
+    final expensesBox = directory != null
         ? await Hive.openLazyBox<Map>('expenses', path: directory.path)
         : await Hive.openLazyBox<Map>('expenses');
 
-    return Future.value(ExpensesDataRepository._(box));
+    final yearsBox = directory != null
+        ? await Hive.openLazyBox<Set>('years', path: directory.path)
+        : await Hive.openLazyBox<Set>('years');
+
+    return Future.value(ExpensesDataRepository._(expensesBox, yearsBox));
   }
 
   /// Closes the internal [Hive] boxes.
   /// Do not use an [ExpensesDataRepository] instance after calling this method!
-  Future<void> close() => _box.close();
+  Future<void> close() async {
+    await _expensesBox.close();
+    await _yearsBox.close();
+  }
 
   /// Returns all of the expenses keys.
   Iterable<ExpensesDataKey> _getExpensesKeys() =>
-      _box.keys.map((dynamic key) => ExpensesDataKey.fromString(key));
+      _expensesBox.keys.map((dynamic key) => ExpensesDataKey.fromString(key));
 
   /// Return the keys which correspond to the given year.
-  Iterable<ExpensesDataKey> _getKeysByYear(ExpensesDataYearKey yearKey) =>
-      _getExpensesKeys().where((key) => key.year == yearKey.year);
+  Future<Iterable<ExpensesDataKey>> _getKeysByYear(
+    ExpensesDataYearKey yearKey,
+  ) async {
+    final keyStrings = await _yearsBox.get(yearKey.year);
 
-  /// Converts a [List<String?>] of nullable JSON strings into [List<String>].
-  /// Filteres out the nulls.
-  Iterable<String> _toJsonStringList(List<String?> nullableJsonString) =>
-      nullableJsonString
-          .where((jsonString) => jsonString != null)
-          .map((jsonString) => jsonString.toString());
+    return keyStrings != null
+        ? keyStrings.map((keyString) => ExpensesDataKey.fromString(keyString))
+        : <ExpensesDataKey>{};
+  }
 
   /// Returns the year(s) for which there is [ExpensesData] in the repository.
   /// The years are wrapped in an [ExpensesDataYearKey] to provided a validated year
   /// which can be used to look up [ExpensesData] by year.
   Future<List<ExpensesDataYearKey>> lookupYears() {
-    final keys = _getExpensesKeys();
-    final yearsList = keys.map((key) => key.year);
-    final yearsSet = <int>{};
-    yearsSet.addAll(yearsList);
-    final sortedYearsList = yearsSet.map(ExpensesDataYearKey._).toList();
+    final keys = _yearsBox.keys.map((keyInt) => ExpensesDataYearKey._(keyInt));
+    final sortedYearsList = keys.toList();
     sortedYearsList.sort();
     return Future.value(sortedYearsList);
   }
@@ -107,7 +114,9 @@ class ExpensesDataRepository {
     final keys = _getExpensesKeys();
 
     for (var key in keys) {
-      final json = (await _box.get(key.toString()))?.cast<String, Object?>();
+      final json = (await _expensesBox.get(
+        key.toString(),
+      ))?.cast<String, Object?>();
 
       if (json != null) {
         result[key] = ExpensesData.fromJson(json);
@@ -120,7 +129,9 @@ class ExpensesDataRepository {
   /// Retrieve an [ExpensesData] from storage, by an [ExpensesDataKey].
   /// Returns null if the requested data is not found.
   Future<ExpensesData?> lookup(ExpensesDataKey key) async {
-    final data = (await _box.get(key.toString()))?.cast<String, Object?>();
+    final data = (await _expensesBox.get(
+      key.toString(),
+    ))?.cast<String, Object?>();
 
     if (data == null) {
       return Future.value();
@@ -133,11 +144,11 @@ class ExpensesDataRepository {
   /// The input is an [ExpensesDataYearKey], which is a validated year.
   /// This avoids having to validate the year in this method.
   Future<List<ExpensesData>> lookupByYear(ExpensesDataYearKey yearKey) async {
-    final keys = _getKeysByYear(yearKey);
+    final keys = await _getKeysByYear(yearKey);
     final data = (await Future.wait(
       keys.map(
         (key) async =>
-            (await _box.get(key.toString()))?.cast<String, Object?>(),
+            (await _expensesBox.get(key.toString()))?.cast<String, Object?>(),
       ),
     ));
 
@@ -172,15 +183,29 @@ class ExpensesDataRepository {
     assert(data.fitness >= 0, 'Fitness must be >= 0.');
     assert(data.education >= 0, 'Education must be >= 0.');
 
+    var yearsData = (await _yearsBox.get(key.toYearKey().year))?.cast<String>();
+
     if (data.housing == 0 &&
         data.food == 0 &&
         data.transportation == 0 &&
         data.entertainment == 0 &&
         data.fitness == 0 &&
         data.education == 0) {
-      await _box.delete(key.toString());
+      await _expensesBox.delete(key.toString());
+
+      if (yearsData != null) {
+        yearsData.remove(key.toString());
+        await _yearsBox.put(key.toYearKey().year, yearsData);
+      }
     } else {
-      await _box.put(key.toString(), data.toJson());
+      await _expensesBox.put(key.toString(), data.toJson());
+
+      if (yearsData != null) {
+        yearsData.add(key.toString());
+        await _yearsBox.put(key.toYearKey().year, yearsData);
+      } else {
+        await _yearsBox.put(key.toYearKey().year, {key.toString()});
+      }
     }
     return Future.value();
   }
