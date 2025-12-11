@@ -56,15 +56,15 @@ class ExpensesDataYearKey with _$ExpensesDataYearKey implements Comparable {
 
 /// A facade for persistent storage of [ExpensesData] using ReaxDB.
 class ExpensesDataRepository {
-  final LazyBox<String> _box;
+  final LazyBox<Map> _box;
 
-  ExpensesDataRepository._(LazyBox<String> box) : _box = box;
+  ExpensesDataRepository._(LazyBox<Map> box) : _box = box;
 
   /// Initializes an [ExpensesDataRepository].
   static Future<ExpensesDataRepository> init({Directory? directory}) async {
     final box = directory != null
-        ? await Hive.openLazyBox<String>('expenses', path: directory.path)
-        : await Hive.openLazyBox<String>('expenses');
+        ? await Hive.openLazyBox<Map>('expenses', path: directory.path)
+        : await Hive.openLazyBox<Map>('expenses');
 
     return Future.value(ExpensesDataRepository._(box));
   }
@@ -107,10 +107,10 @@ class ExpensesDataRepository {
     final keys = _getExpensesKeys();
 
     for (var key in keys) {
-      final jsonString = await _box.get(key.toString());
+      final json = (await _box.get(key.toString()))?.cast<String, Object?>();
 
-      if (jsonString != null) {
-        result[key] = ExpensesData.fromJsonString(jsonString);
+      if (json != null) {
+        result[key] = ExpensesData.fromJson(json);
       }
     }
 
@@ -120,13 +120,13 @@ class ExpensesDataRepository {
   /// Retrieve an [ExpensesData] from storage, by an [ExpensesDataKey].
   /// Returns null if the requested data is not found.
   Future<ExpensesData?> lookup(ExpensesDataKey key) async {
-    final data = await _box.get(key.toString());
+    final data = (await _box.get(key.toString()))?.cast<String, Object?>();
 
     if (data == null) {
       return Future.value();
     }
 
-    return ExpensesData.fromJsonString(data);
+    return ExpensesData.fromJson(data);
   }
 
   /// Retrieve [ExpensesData] records from storage, by year.
@@ -135,13 +135,23 @@ class ExpensesDataRepository {
   Future<List<ExpensesData>> lookupByYear(ExpensesDataYearKey yearKey) async {
     final keys = _getKeysByYear(yearKey);
     final data = (await Future.wait(
-      keys.map((key) async => await _box.get(key.toString())),
+      keys.map(
+        (key) async =>
+            (await _box.get(key.toString()))?.cast<String, Object?>(),
+      ),
     ));
 
-    final filteredData = _toJsonStringList(data);
+    //final filteredData = _toJsonStringList(data);
+    final filteredData = <Map<String, Object?>>[];
+
+    for (var item in data) {
+      if (item != null) {
+        filteredData.add(item);
+      }
+    }
 
     return Future.value(
-      filteredData.map((value) => ExpensesData.fromJsonString(value)).toList(),
+      filteredData.map((value) => ExpensesData.fromJson(value)).toList(),
     );
   }
 
@@ -170,7 +180,7 @@ class ExpensesDataRepository {
         data.education == 0) {
       await _box.delete(key.toString());
     } else {
-      await _box.put(key.toString(), data.toJsonString());
+      await _box.put(key.toString(), data.toJson());
     }
     return Future.value();
   }
