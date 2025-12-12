@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_ce/hive.dart';
 import 'package:monthly_expenses_tracker/data_entry/data_entry_service.dart';
 import 'package:monthly_expenses_tracker/expenses_data/expenses_data_repository.dart';
 
@@ -13,7 +12,8 @@ void main() {
   setUp(() async {
     tempDir = await Directory.systemTemp.createTemp('monthly_expenses_tracker');
     repository = await ExpensesDataRepository.init(directory: tempDir);
-    service = DataEntryService(repository);
+    final today = DateTime.parse('2020-01-30 02:20:54');
+    service = DataEntryService(repository, today: today);
   });
 
   tearDown(() async {
@@ -22,37 +22,38 @@ void main() {
   });
 
   test('initial state', () {
-    expect(service.month, 1);
-    expect(service.year, 1969);
+    expect(service.month, 12);
+    expect(service.year, 2019);
     expect(service.data, null);
   });
 
   test('load', () async {
-    await service.load(month: 6, year: 2020);
+    await service.setDateAsync(month: 6, year: 2020);
     expect(service.month, 6);
     expect(service.year, 2020);
     expect(service.data, null);
+    expect(service.state.value, isA<DataEntryServiceFinishedState>());
   });
 
   test('invalid load', () {
     expect(
-      () async => await service.load(month: 0, year: 2020),
+      () async => await service.setDateAsync(month: 0, year: 2020),
       throwsA(isAssertionError),
     );
 
     expect(
-      () async => await service.load(month: 13, year: 2020),
+      () async => await service.setDateAsync(month: 13, year: 2020),
       throwsA(isAssertionError),
     );
 
     expect(
-      () async => await service.load(month: 12, year: 1968),
+      () async => await service.setDateAsync(month: 12, year: 1968),
       throwsA(isAssertionError),
     );
   });
 
   test('update', () async {
-    await service.load(month: 5, year: 2019);
+    await service.setDateAsync(month: 5, year: 2019);
     await service.update(
       housing: 1000,
       food: 500,
@@ -70,6 +71,7 @@ void main() {
     expect(service.data?.entertainment, 200);
     expect(service.data?.fitness, 60);
     expect(service.data?.education, 0);
+    expect(service.state.value, isA<DataEntryServiceFinishedState>());
 
     await service.update(
       housing: 0,
@@ -88,5 +90,6 @@ void main() {
     expect(service.data?.entertainment, 200);
     expect(service.data?.fitness, 120);
     expect(service.data?.education, 0);
+    expect(service.state.value, isA<DataEntryServiceFinishedState>());
   });
 }
