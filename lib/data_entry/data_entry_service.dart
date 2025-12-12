@@ -18,6 +18,8 @@ class DataEntryServiceErrorState extends DataEntryServiceState {
   String get message => _message;
 }
 
+typedef Month = ({int number, String name});
+
 /// A facade that provides the business logic of entering expenses into the application.
 /// Uses an [ExpensesDataRepository] to store data.
 /// Maintains internal state to make it easy to use with the Flutter widget tree.
@@ -52,6 +54,22 @@ class DataEntryService {
 
     _load();
   }
+
+  /// Return a static list of [Month]s.
+  List<Month> get months => <Month>[
+    (number: DateTime.january, name: 'January'),
+    (number: DateTime.february, name: 'February'),
+    (number: DateTime.march, name: 'March'),
+    (number: DateTime.april, name: 'April'),
+    (number: DateTime.may, name: 'May'),
+    (number: DateTime.june, name: 'June'),
+    (number: DateTime.july, name: 'July'),
+    (number: DateTime.august, name: 'August'),
+    (number: DateTime.september, name: 'September'),
+    (number: DateTime.october, name: 'October'),
+    (number: DateTime.november, name: 'November'),
+    (number: DateTime.december, name: 'December'),
+  ];
 
   int get month => _month;
   int get year => _year;

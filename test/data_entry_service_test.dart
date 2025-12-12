@@ -92,4 +92,10 @@ void main() {
     expect(service.data?.education, 0);
     expect(service.state.value, isA<DataEntryServiceFinishedState>());
   });
+
+  test('update', () {
+    expect(service.months.length, 12);
+    expect(service.months[3].number, 4);
+    expect(service.months[3].name, 'April');
+  });
 }
