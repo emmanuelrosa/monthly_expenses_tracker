@@ -29,7 +29,7 @@ class DataEntryService {
   int _month = 1;
   int _year = 1969;
   ExpensesData? _data;
-  ValueNotifier<DataEntryServiceState> _state = ValueNotifier(
+  final ValueNotifier<DataEntryServiceState> _state = ValueNotifier(
     DataEntryServiceLoadingState(),
   );
 
