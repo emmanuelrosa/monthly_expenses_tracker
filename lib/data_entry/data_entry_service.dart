@@ -74,7 +74,7 @@ class DataEntryService {
   /// Updates the internal state using the expenses data for the provided month/year.
   /// Intended to be used for testing.
   /// Throws [AssertionError] when the month or year are invalid.
-  Future<void> setDateAsync({required int month, required int year}) async {
+  Future<void> setDate({required int month, required int year}) async {
     assert(
       month >= 1 && month <= 12,
       'The month argument must be between 1 and 12, inclusive',
@@ -85,14 +85,6 @@ class DataEntryService {
     _year = year;
     _data = null;
     return _load();
-  }
-
-  /// Updates the internal state using the expenses data for the provided month/year.
-  /// Meant to be used with Flutter by using a [ValueListenableBuilder] to listen to
-  /// changes to [DataEntryService.state].
-  /// Throws [AssertionError] when the month or year are invalid.
-  void setDate({required int month, required int year}) {
-    setDate(month: month, year: year);
   }
 
   /// Adds/updates the monthly expenses record for the month and year specified when [load()] was executed.

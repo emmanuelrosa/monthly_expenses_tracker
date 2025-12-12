@@ -28,7 +28,7 @@ void main() {
   });
 
   test('load', () async {
-    await service.setDateAsync(month: 6, year: 2020);
+    await service.setDate(month: 6, year: 2020);
     expect(service.month, 6);
     expect(service.year, 2020);
     expect(service.data, null);
@@ -37,23 +37,23 @@ void main() {
 
   test('invalid load', () {
     expect(
-      () async => await service.setDateAsync(month: 0, year: 2020),
+      () async => await service.setDate(month: 0, year: 2020),
       throwsA(isAssertionError),
     );
 
     expect(
-      () async => await service.setDateAsync(month: 13, year: 2020),
+      () async => await service.setDate(month: 13, year: 2020),
       throwsA(isAssertionError),
     );
 
     expect(
-      () async => await service.setDateAsync(month: 12, year: 1968),
+      () async => await service.setDate(month: 12, year: 1968),
       throwsA(isAssertionError),
     );
   });
 
   test('update', () async {
-    await service.setDateAsync(month: 5, year: 2019);
+    await service.setDate(month: 5, year: 2019);
     await service.update(
       housing: 1000,
       food: 500,
