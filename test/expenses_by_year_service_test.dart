@@ -78,13 +78,13 @@ void main() {
   });
 
   test('initial state', () {
-    expect(service.data, null);
+    expect(service.data, {});
     expect(service.state.value, isA<ExpensesByYearServiceLoadingState>());
   });
 
   test('lookup', () async {
     await service.lookup();
-    final data = service.data!;
+    final data = service.data;
     final years = data.keys.toList();
 
     years.sort();

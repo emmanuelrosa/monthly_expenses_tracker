@@ -21,7 +21,7 @@ class ExpensesByYearServiceErrorState extends ExpensesByYearServiceState {
 /// Provices the total expenses aggregated by year.
 class ExpensesByYearService {
   final ExpensesDataRepository _repository;
-  Map<ExpensesDataYearKey, ExpensesData>? _data;
+  Map<ExpensesDataYearKey, ExpensesData> _data = {};
   final ValueNotifier<ExpensesByYearServiceState> _state = ValueNotifier(
     ExpensesByYearServiceLoadingState(),
   );
@@ -31,8 +31,8 @@ class ExpensesByYearService {
 
   /// Returns a copy of the cached data returned by [lookup()].
   /// Beware that the data is unsorted.
-  Map<ExpensesDataYearKey, ExpensesData>? get data =>
-      _data != null ? Map<ExpensesDataYearKey, ExpensesData>.of(_data!) : null;
+  Map<ExpensesDataYearKey, ExpensesData> get data =>
+      Map<ExpensesDataYearKey, ExpensesData>.of(_data);
 
   /// Returns a [ValueNotifier] of the current [ExpensesByYearServiceState] of the service.
   /// Listen to the notifier to get notified of state changes.
