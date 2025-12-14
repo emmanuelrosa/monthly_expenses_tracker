@@ -143,27 +143,29 @@ class ExpensesDataRepository {
   /// Retrieve [ExpensesData] records from storage, by year.
   /// The input is an [ExpensesDataYearKey], which is a validated year.
   /// This avoids having to validate the year in this method.
-  Future<List<ExpensesData>> lookupByYear(ExpensesDataYearKey yearKey) async {
+  Future<Map<ExpensesDataKey, ExpensesData>> lookupByYear(
+    ExpensesDataYearKey yearKey,
+  ) async {
     final keys = await _getKeysByYear(yearKey);
-    final data = (await Future.wait(
-      keys.map(
-        (key) async =>
-            (await _expensesBox.get(key.toString()))?.cast<String, Object?>(),
-      ),
-    ));
+    final data =
+        (await Future.wait(
+          keys.map(
+            (key) async => (
+              key: key,
+              value: (await _expensesBox.get(
+                key.toString(),
+              ))?.cast<String, Object?>(),
+            ),
+          ),
+        )).fold(<ExpensesDataKey, ExpensesData>{}, (map, entry) {
+          if (entry.value != null) {
+            map[entry.key] = ExpensesData.fromJson(entry.value!);
+          }
 
-    //final filteredData = _toJsonStringList(data);
-    final filteredData = <Map<String, Object?>>[];
+          return map;
+        });
 
-    for (var item in data) {
-      if (item != null) {
-        filteredData.add(item);
-      }
-    }
-
-    return Future.value(
-      filteredData.map((value) => ExpensesData.fromJson(value)).toList(),
-    );
+    return Future.value(data);
   }
 
   /// Add/update/delete an [ExpensesData] into/from storage, by its [ExpensesDataKey].

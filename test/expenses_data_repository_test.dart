@@ -160,9 +160,20 @@ void main() {
     expect(years.first.year, 2018);
     expect(years.last.year, 2019);
 
-    final data = await repository.lookupByYear(years.first);
+    final result1 = await repository.lookupByYear(years.first);
+    expect(result1.length, 2);
+    expect(result1.containsKey(key1), true);
+    expect(result1.containsKey(key2), true);
+    expect(result1.containsKey(key3), false);
+    expect(result1[key1], data1);
+    expect(result1[key2], data2);
 
-    expect(data.length, 2);
+    final result2 = await repository.lookupByYear(years.last);
+    expect(result2.length, 1);
+    expect(result2.containsKey(key1), false);
+    expect(result2.containsKey(key2), false);
+    expect(result2.containsKey(key3), true);
+    expect(result2[key3], data3);
   });
 
   test('lookup all', () async {
