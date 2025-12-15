@@ -108,9 +108,9 @@ class ExpensesDataRepository {
     return Future.value(sortedYearsList);
   }
 
-  /// Retrieve all of the [ExpensesData] from storage.
-  Future<Map<ExpensesDataKey, ExpensesData>> lookupAll() async {
-    final result = <ExpensesDataKey, ExpensesData>{};
+  /// Retrieves all of the [ExpensesData] from storage,
+  /// and returns them incrementally as a [Stream] of [MapEntry].
+  Stream<MapEntry<ExpensesDataKey, ExpensesData>> streamAll() async* {
     final keys = _getExpensesKeys();
 
     for (var key in keys) {
@@ -119,9 +119,16 @@ class ExpensesDataRepository {
       ))?.cast<String, Object?>();
 
       if (json != null) {
-        result[key] = ExpensesData.fromJson(json);
+        yield MapEntry(key, ExpensesData.fromJson(json));
       }
     }
+  }
+
+  /// Retrieves all of the [ExpensesData] from storage.
+  Future<Map<ExpensesDataKey, ExpensesData>> lookupAll() async {
+    final result = <ExpensesDataKey, ExpensesData>{};
+
+    result.addEntries(await streamAll().toList());
 
     return Future.value(result);
   }
