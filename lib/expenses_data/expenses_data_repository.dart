@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:monthly_expenses_tracker/expenses_data/expenses_data.dart';
@@ -55,7 +56,7 @@ class ExpensesDataYearKey with _$ExpensesDataYearKey implements Comparable {
 }
 
 /// A facade for persistent storage of [ExpensesData] using ReaxDB.
-class ExpensesDataRepository {
+class ExpensesDataRepository with ChangeNotifier {
   final LazyBox<Map> _expensesBox;
   final LazyBox<Set> _yearsBox;
 
@@ -82,6 +83,12 @@ class ExpensesDataRepository {
     await _expensesBox.close();
     await _yearsBox.close();
   }
+
+  /// Returns whether the repository contains data or not.
+  bool get hasData => _expensesBox.keys.isNotEmpty;
+
+  /// Returns the number of [ExpensesData] records in the repository.
+  int get numberOfRecords => _expensesBox.keys.length;
 
   /// Returns all of the expenses keys.
   Iterable<ExpensesDataKey> _getExpensesKeys() =>
@@ -216,6 +223,8 @@ class ExpensesDataRepository {
         await _yearsBox.put(key.toYearKey().year, {key.toString()});
       }
     }
+
+    notifyListeners();
     return Future.value();
   }
 
