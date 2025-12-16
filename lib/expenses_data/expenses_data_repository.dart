@@ -228,6 +228,63 @@ class ExpensesDataRepository with ChangeNotifier {
     return Future.value();
   }
 
+  /// Add/update/delete all of the [ExpensesData] records into/from storage.
+  /// Adds/updates when at least one of the expense values are non-zero.
+  /// Deletes an existing record when all expense values are zero.
+  /// This is to avoid having two null states: when the record doesn't exist
+  /// and when the record exists but contains all zeros.
+  /// Throws [AssertionError] and aborts entire update when any expense is negative.
+  Future<void> updateAll(Map<ExpensesDataKey, ExpensesData> data) async {
+    final expensesToUpdate = <ExpensesDataKey, ExpensesData>{};
+    final expensesToDelete = <ExpensesDataKey, ExpensesData>{};
+    final yearsUpdates = <int, Set<String>>{};
+
+    for (final entry in data.entries) {
+      assert(entry.value.housing >= 0, 'Housing must be >= 0.');
+      assert(entry.value.food >= 0, 'Food must be >= 0.');
+      assert(entry.value.transportation >= 0, 'Transportation must be >= 0.');
+      assert(entry.value.entertainment >= 0, 'Entertainment must be >= 0.');
+      assert(entry.value.fitness >= 0, 'Fitness must be >= 0.');
+      assert(entry.value.education >= 0, 'Education must be >= 0.');
+
+      if (entry.value.housing == 0 &&
+          entry.value.food == 0 &&
+          entry.value.transportation == 0 &&
+          entry.value.entertainment == 0 &&
+          entry.value.fitness == 0 &&
+          entry.value.education == 0) {
+        expensesToDelete[entry.key] = entry.value;
+        var yearsData = (await _yearsBox.get(
+          entry.key.toYearKey().year,
+          defaultValue: {},
+        ))!.cast<String>();
+        yearsData.remove(entry.key.toString());
+        yearsUpdates[entry.key.toYearKey().year] = yearsData;
+      } else {
+        expensesToUpdate[entry.key] = entry.value;
+        var yearsData = (await _yearsBox.get(
+          entry.key.toYearKey().year,
+          defaultValue: {},
+        ))!.cast<String>();
+        yearsData.add(entry.key.toString());
+        yearsUpdates[entry.key.toYearKey().year] = yearsData;
+      }
+    }
+
+    await _expensesBox.putAll(
+      expensesToUpdate.map(
+        (key, expenses) => MapEntry(key.toString(), expenses.toJson()),
+      ),
+    );
+    await _expensesBox.deleteAll(
+      expensesToDelete.keys.map((key) => key.toString()),
+    );
+    await _yearsBox.putAll(yearsUpdates);
+
+    notifyListeners();
+    return Future.value();
+  }
+
   /// Provides aggregated (summed) [ExpensesData], by year for the given year.
   Future<Map<ExpensesDataYearKey, ExpensesData>> aggregateByYear() async {
     final result = <ExpensesDataYearKey, ExpensesData>{};

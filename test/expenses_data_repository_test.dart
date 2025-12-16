@@ -269,4 +269,93 @@ void main() {
     expect(year2018?.education, 0);
     expect(year2019!, data3);
   });
+
+  test('updateAll', () async {
+    final originalData = <ExpensesDataKey, ExpensesData>{
+      ExpensesDataKey(month: 1, year: 2017): ExpensesData(
+        housing: 2000,
+        food: 400,
+        transportation: 400,
+        entertainment: 30,
+        fitness: 20,
+        education: 0,
+      ),
+      ExpensesDataKey(month: 2, year: 2017): ExpensesData(
+        housing: 2000,
+        food: 450,
+        transportation: 300,
+        entertainment: 30,
+        fitness: 20,
+        education: 0,
+      ),
+      ExpensesDataKey(month: 3, year: 2017): ExpensesData(
+        housing: 2000,
+        food: 440,
+        transportation: 350,
+        entertainment: 30,
+        fitness: 20,
+        education: 0,
+      ),
+      ExpensesDataKey(month: 1, year: 2018): ExpensesData(
+        housing: 2000,
+        food: 440,
+        transportation: 350,
+        entertainment: 30,
+        fitness: 20,
+        education: 0,
+      ),
+    };
+
+    final updatedData = <ExpensesDataKey, ExpensesData>{
+      ExpensesDataKey(month: 1, year: 2017): ExpensesData(
+        housing: 2000,
+        food: 500,
+        transportation: 400,
+        entertainment: 30,
+        fitness: 20,
+        education: 0,
+      ),
+      ExpensesDataKey(month: 2, year: 2017): ExpensesData(
+        housing: 0,
+        food: 0,
+        transportation: 0,
+        entertainment: 0,
+        fitness: 0,
+        education: 0,
+      ),
+    };
+
+    await repository.updateAll(originalData);
+    final data1 = await repository.lookup(
+      ExpensesDataKey(month: 1, year: 2017),
+    );
+    final yearsData1 = await repository.lookupYears();
+    expect(repository.numberOfRecords, 4);
+    expect(data1, originalData[ExpensesDataKey(month: 1, year: 2017)]);
+    expect(yearsData1.length, 2);
+    expect(
+      yearsData1.contains(ExpensesDataKey(month: 1, year: 2017).toYearKey()),
+      true,
+    );
+    expect(
+      yearsData1.contains(ExpensesDataKey(month: 1, year: 2018).toYearKey()),
+      true,
+    );
+
+    await repository.updateAll(updatedData);
+    final data2 = await repository.lookup(
+      ExpensesDataKey(month: 1, year: 2017),
+    );
+    final data3 = await repository.lookup(
+      ExpensesDataKey(month: 2, year: 2017),
+    );
+    final data4 = await repository.lookup(
+      ExpensesDataKey(month: 3, year: 2017),
+    );
+    expect(repository.numberOfRecords, 3);
+    expect((await repository.lookupYears()).length, 2);
+    expect(data2, updatedData[ExpensesDataKey(month: 1, year: 2017)]);
+    expect(data4, originalData[ExpensesDataKey(month: 3, year: 2017)]);
+    expect(data3, null);
+  });
 }
