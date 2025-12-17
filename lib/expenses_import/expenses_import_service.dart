@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:fast_csv/fast_csv.dart' as csv;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:monthly_expenses_tracker/expenses_data/expenses_data.dart';
 import 'package:monthly_expenses_tracker/expenses_data/expenses_data_repository.dart';
 
@@ -71,17 +72,15 @@ class ExpensesImportServiceErrorState extends ExpensesImportServiceState {
 }
 
 /// This service handles importing a CSV file into the [ExpensesDataRepository].
-class ExpensesImportService {
+class ExpensesImportService with ChangeNotifier {
   final ExpensesDataRepository _repository;
-  final ValueNotifier<ExpensesImportServiceState> _state = ValueNotifier(
-    ExpensesImportServiceReadyState(),
-  );
+  ExpensesImportServiceState _state = ExpensesImportServiceReadyState();
 
   ExpensesImportService(ExpensesDataRepository repository)
     : _repository = repository;
 
   /// Returns a [ValueNotifier] with the current state of the service.
-  ValueNotifier<ExpensesImportServiceState> get state => _state;
+  ExpensesImportServiceState get state => _state;
 
   /// Parses an expense from the given line and column.
   /// Throws [ExpenseFormatException] when there's a parsing error.
@@ -166,22 +165,64 @@ class ExpensesImportService {
   }
 
   /// Imports the bytes of a CSV file into the [ExpensesDataRepository].
-  Future<void> importFromCsv(List<int> bytes) async {
-    _state.value = ExpensesImportServiceImportingState();
+  // The optional [minimumDelay] can be used to give the UI a chance to render
+  // a progress indicator.
+  Future<void> importFromCsv(
+    List<int> bytes, {
+    Duration minimumDelay = Duration.zero,
+  }) async {
+    final startTimestamp = DateTime.timestamp();
+    _state = ExpensesImportServiceImportingState();
+    notifyListeners();
     final expenses = <ExpensesDataKey, ExpensesData>{};
+    late ExpensesImportServiceState finalState;
 
     try {
-      final stream = _convertToExpenses(_parseCsv(bytes));
-
-      await for (final entry in stream) {
+      await for (final entry in _convertToExpenses(_parseCsv(bytes))) {
         expenses[entry.key] = entry.value;
       }
-    } catch (e) {
-      _state.value = ExpensesImportServiceErrorState(e.toString());
-      return;
-    }
 
-    await _repository.updateAll(expenses);
-    _state.value = ExpensesImportServiceReadyState();
+      await _repository.updateAll(expenses);
+      finalState = ExpensesImportServiceReadyState();
+    } catch (e) {
+      finalState = ExpensesImportServiceErrorState(e.toString());
+    } finally {
+      final elapsedTime = DateTime.timestamp().difference(startTimestamp);
+      final delay = minimumDelay - elapsedTime;
+
+      if (!delay.isNegative) {
+        await Future.delayed(delay);
+      }
+
+      _state = finalState;
+      notifyListeners();
+    }
   }
+}
+
+/// Dependency injection for [ExpensesImportService].
+class ExpensesImportServiceProvider extends InheritedWidget {
+  final ExpensesImportService service;
+
+  const ExpensesImportServiceProvider({
+    super.key,
+    required this.service,
+    required super.child,
+  });
+
+  static ExpensesImportServiceProvider? maybeOf(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<ExpensesImportServiceProvider>();
+
+  static ExpensesImportServiceProvider of(BuildContext context) {
+    final provider = maybeOf(context);
+    assert(
+      provider != null,
+      'No ExpensesImportServiceProvider found in context.',
+    );
+    return provider!;
+  }
+
+  @override
+  bool updateShouldNotify(covariant ExpensesImportServiceProvider oldWidget) =>
+      this != oldWidget;
 }

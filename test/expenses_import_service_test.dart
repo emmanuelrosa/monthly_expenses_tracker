@@ -22,7 +22,7 @@ void main() {
   });
 
   test('initial state', () {
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
   });
 
   test('succesful import', () async {
@@ -32,7 +32,7 @@ void main() {
       "2018",2,1000,300,300,120,60,20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
     final data1 = await repository.lookup(
       ExpensesDataKey(month: 1, year: 2018),
@@ -40,7 +40,7 @@ void main() {
     final data2 = await repository.lookup(
       ExpensesDataKey(month: 2, year: 2018),
     );
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     expect(data1?.housing, 1000);
     expect(data2?.education, 20);
     expect(repository.numberOfRecords, 2);
@@ -54,7 +54,7 @@ void main() {
       2019,1,1000,300,300,120,60,20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
     final data1 = await repository.lookup(
       ExpensesDataKey(month: 1, year: 2018),
@@ -62,7 +62,7 @@ void main() {
     final data2 = await repository.lookup(
       ExpensesDataKey(month: 2, year: 2018),
     );
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     expect(data1?.housing, 1000);
     expect(data2?.education, 20);
     expect(repository.numberOfRecords, 3);
@@ -76,11 +76,11 @@ void main() {
       "hello",2,1000,300,300,120,60,20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
-    expect(service.state.value, isA<ExpensesImportServiceErrorState>());
+    expect(service.state, isA<ExpensesImportServiceErrorState>());
     expect(
-      service.state.value.toString(),
+      service.state.toString(),
       'Unable to parse the year on row 3, column 1. The year must be a whole number >= 1969.',
     );
     expect(repository.numberOfRecords, 0);
@@ -93,11 +93,11 @@ void main() {
       2018,2,1000,300,300,120,60,20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
-    expect(service.state.value, isA<ExpensesImportServiceErrorState>());
+    expect(service.state, isA<ExpensesImportServiceErrorState>());
     expect(
-      service.state.value.toString(),
+      service.state.toString(),
       'Unable to parse the year on row 2, column 1. The year must be a whole number >= 1969.',
     );
     expect(repository.numberOfRecords, 0);
@@ -110,11 +110,11 @@ void main() {
       2018,"hello",1000,300,300,120,60,20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
-    expect(service.state.value, isA<ExpensesImportServiceErrorState>());
+    expect(service.state, isA<ExpensesImportServiceErrorState>());
     expect(
-      service.state.value.toString(),
+      service.state.toString(),
       'Unable to parse the month on row 3, column 2. The month must be a whole number >= 1 and <= 12.',
     );
     expect(repository.numberOfRecords, 0);
@@ -127,11 +127,11 @@ void main() {
       2018,2,1000,300,300,120,60,20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
-    expect(service.state.value, isA<ExpensesImportServiceErrorState>());
+    expect(service.state, isA<ExpensesImportServiceErrorState>());
     expect(
-      service.state.value.toString(),
+      service.state.toString(),
       'Unable to parse the month on row 2, column 2. The month must be a whole number >= 1 and <= 12.',
     );
     expect(repository.numberOfRecords, 0);
@@ -144,11 +144,11 @@ void main() {
       2018,2,1000,300,300,120,60,20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
-    expect(service.state.value, isA<ExpensesImportServiceErrorState>());
+    expect(service.state, isA<ExpensesImportServiceErrorState>());
     expect(
-      service.state.value.toString(),
+      service.state.toString(),
       'Rejected expense on row 2 column 8 because negative values are not allowed.',
     );
     expect(repository.numberOfRecords, 0);
@@ -161,11 +161,11 @@ void main() {
       2018,2,1000,300,300,120,"hello",20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
-    expect(service.state.value, isA<ExpensesImportServiceErrorState>());
+    expect(service.state, isA<ExpensesImportServiceErrorState>());
     expect(
-      service.state.value.toString(),
+      service.state.toString(),
       'Unable to parse the expense on row 3 column 7.',
     );
     expect(repository.numberOfRecords, 0);
@@ -178,11 +178,11 @@ void main() {
       2018,2,1000,300,300,120,60,20''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
-    expect(service.state.value, isA<ExpensesImportServiceErrorState>());
+    expect(service.state, isA<ExpensesImportServiceErrorState>());
     expect(
-      service.state.value.toString(),
+      service.state.toString(),
       'Row 2 should have 8 columns, but has 7 columns.',
     );
     expect(repository.numberOfRecords, 0);
@@ -195,11 +195,11 @@ void main() {
       2018,2,1000,300,300,120,60,20,50''';
     final bytes = utf8.encode(csv);
 
-    expect(service.state.value, isA<ExpensesImportServiceReadyState>());
+    expect(service.state, isA<ExpensesImportServiceReadyState>());
     await service.importFromCsv(bytes);
-    expect(service.state.value, isA<ExpensesImportServiceErrorState>());
+    expect(service.state, isA<ExpensesImportServiceErrorState>());
     expect(
-      service.state.value.toString(),
+      service.state.toString(),
       'Row 3 should have 8 columns, but has 9 columns.',
     );
     expect(repository.numberOfRecords, 0);

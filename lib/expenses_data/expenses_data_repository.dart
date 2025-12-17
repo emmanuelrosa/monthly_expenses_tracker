@@ -1,9 +1,13 @@
 import 'dart:io';
+import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:monthly_expenses_tracker/expenses_data/expenses_data.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 part 'expenses_data_repository.freezed.dart';
 
@@ -66,13 +70,17 @@ class ExpensesDataRepository with ChangeNotifier {
 
   /// Initializes an [ExpensesDataRepository].
   static Future<ExpensesDataRepository> init({Directory? directory}) async {
+    final namespace = 'com.github.emmanuelrosa.monthly_expenses_tracker';
     final expensesBox = directory != null
-        ? await Hive.openLazyBox<Map>('expenses', path: directory.path)
-        : await Hive.openLazyBox<Map>('expenses');
+        ? await Hive.openLazyBox<Map>(
+            '$namespace.expenses',
+            path: directory.path,
+          )
+        : await Hive.openLazyBox<Map>('$namespace.expenses');
 
     final yearsBox = directory != null
-        ? await Hive.openLazyBox<Set>('years', path: directory.path)
-        : await Hive.openLazyBox<Set>('years');
+        ? await Hive.openLazyBox<Set>('$namespace.years', path: directory.path)
+        : await Hive.openLazyBox<Set>('$namespace.years');
 
     return Future.value(ExpensesDataRepository._(expensesBox, yearsBox));
   }
@@ -304,5 +312,167 @@ class ExpensesDataRepository with ChangeNotifier {
     }
 
     return Future.value(result);
+  }
+}
+
+/// Provides dependency injection for [ExpensesDataRepository].
+class ExpensesDataRepositoryProvider extends InheritedWidget {
+  final ExpensesDataRepository repository;
+
+  const ExpensesDataRepositoryProvider({
+    super.key,
+    required this.repository,
+    required super.child,
+  });
+
+  static ExpensesDataRepositoryProvider? maybeOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<ExpensesDataRepositoryProvider>();
+
+  static ExpensesDataRepositoryProvider of(BuildContext context) {
+    final provider = maybeOf(context);
+    assert(
+      provider != null,
+      'No ExpensesDataRepositoryProvider found in context.',
+    );
+    return provider!;
+  }
+
+  @override
+  bool updateShouldNotify(covariant ExpensesDataRepositoryProvider oldWidget) =>
+      this != oldWidget;
+}
+
+/// A widget which handles initialization of the [ExpensesDataRepository].
+/// A loading page is displayed and the given [child] is rendered upon success.
+/// The [child] is wrapped in a [ExpensesDataRepositoryProvider].
+/// Upon failure, an error page is rendered.
+/// This widget becomes the owner of the [ExpensesDataRepository] and will call [dispose()] if it's disposed.
+class ExpensesDataRepositoryLoader extends StatefulWidget {
+  final Widget child;
+  late Future<Directory?> dataDirectory;
+
+  ExpensesDataRepositoryLoader({super.key, required this.child}) {
+    if (kIsWeb) {
+      dataDirectory = Future.value(null);
+    } else {
+      dataDirectory = getApplicationDocumentsDirectory().then(
+        (documentDir) => Future.value(
+          Directory(path.join(documentDir.path, 'monthly_expenses_tracker')),
+        ),
+      );
+    }
+  }
+
+  @override
+  State<StatefulWidget> createState() => _ExpensesDataRepositoryLoaderState();
+}
+
+class _ExpensesDataRepositoryLoaderState
+    extends State<ExpensesDataRepositoryLoader> {
+  ExpensesDataRepository? repository;
+  String? errorMessage;
+
+  void _initializeRepository() async {
+    await Future.delayed(Duration(milliseconds: 500));
+
+    try {
+      final directory = await widget.dataDirectory;
+      final resolvedRepository = await ExpensesDataRepository.init(
+        directory: directory,
+      );
+
+      setState(() {
+        repository = resolvedRepository;
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = e.toString();
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeRepository();
+  }
+
+  @override
+  void dispose() {
+    repository?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isErrorState = errorMessage != null;
+    final isSuccessState = repository != null;
+
+    final errorStateBody = Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) => Icon(
+              Icons.error,
+              size: max(100, min(constraints.maxWidth - 150, 200)),
+              color: theme.primaryColorLight,
+            ),
+          ),
+          Text(
+            'Unable to initialize the database.',
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: theme.primaryColorLight,
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            errorMessage ?? 'Unknown error.',
+            style: theme.textTheme.titleLarge?.copyWith(
+              color: theme.primaryColorLight,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final loadingStateBody = Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              double size = max(100, min(constraints.maxWidth - 150, 200));
+
+              return SizedBox(
+                width: size,
+                height: size,
+                child: CircularProgressIndicator(strokeWidth: 10),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    if (isErrorState) {
+      return Scaffold(
+        backgroundColor: theme.colorScheme.secondary,
+        body: errorStateBody,
+      );
+    } else if (isSuccessState) {
+      return ExpensesDataRepositoryProvider(
+        repository: repository!,
+        child: widget.child,
+      );
+    } else {
+      // Loading state
+      return Scaffold(
+        backgroundColor: theme.colorScheme.inversePrimary,
+        body: loadingStateBody,
+      );
+    }
   }
 }
