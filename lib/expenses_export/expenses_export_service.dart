@@ -25,45 +25,36 @@ class ExpensesExportServiceErrorState extends ExpensesExportServiceState {
 }
 
 /// This service provides the ability to export the [ExpensesData] to a CSV file.
-/// Uses a [ChangeNotifier] listener to determine whether exporting should be allowed or not.
-/// Call [dispose()] when finished using an instance of this class.
-class ExpensesExportService {
+class ExpensesExportService with ChangeNotifier {
   final ExpensesDataRepository _repository;
-  late ValueNotifier<ExpensesExportServiceState> _state;
+  ExpensesExportServiceState _state = ExpensesExportServiceNotReadyState();
 
+  /// Initializes the service.
+  /// The [state] will be set depending on whether the [repository] has data.
   ExpensesExportService(ExpensesDataRepository repository)
     : _repository = repository {
-    _state = ValueNotifier(
-      _repository.hasData
-          ? ExpensesExportServiceReadyState()
-          : ExpensesExportServiceNotReadyState(),
-    );
-
-    _repository.addListener(_repositoryChanged);
+    _state = _repository.hasData
+        ? ExpensesExportServiceReadyState()
+        : ExpensesExportServiceNotReadyState();
   }
 
-  /// Updates the [ValueNotifier] depending on whether the repository has data to export or not.
-  void _repositoryChanged() => _state.value = _repository.hasData
-      ? ExpensesExportServiceReadyState()
-      : ExpensesExportServiceNotReadyState();
-
-  /// Releases internal resources.
-  /// Don't use an instance of this class after calling this method.
-  void dispose() {
-    _repository.removeListener(_repositoryChanged);
-  }
-
-  /// Returns a [ValueNotifier] of the current [ExpensesExportServiceState] of the service.
-  /// Listen to the notifier to get notified of state changes.
-  ValueNotifier<ExpensesExportServiceState> get state => _state;
+  /// Returns the current [ExpensesExportServiceState] of the service.
+  ExpensesExportServiceState get state => _state;
 
   /// Exports the [ExpenseData] records to a [Uint8List] formatted as CSV.
   /// If provided, the callback is called with the bytes ready to write to a file.
   /// The [state] is updated along the way to indicate progress, and to yield
   /// to the Dart runtime.
+  /// Only call when [state] is [ExpensesExportServiceReadyState].
+  /// Throws [AssertionError] if the repository doesn't have any data.
   Future<void> exportExpenses([
     void Function(Uint8List bytes)? completed,
   ]) async {
+    assert(
+      _repository.hasData,
+      'exportExpenses() cannot be called when there is no data available.',
+    );
+
     final builder = BytesBuilder();
     final totalNumberOfLines = _repository.numberOfRecords + 1;
     var recordCount = 1;
@@ -71,9 +62,10 @@ class ExpensesExportService {
     await for (final line in toCSV()) {
       final bytes = utf8.encode(line);
       builder.add(bytes);
-      _state.value = ExpensesExportServiceExportingState(
+      _state = ExpensesExportServiceExportingState(
         recordCount / totalNumberOfLines,
       );
+      notifyListeners();
       recordCount++;
     }
 
@@ -81,9 +73,11 @@ class ExpensesExportService {
       completed(builder.toBytes());
     }
 
-    _state.value = ExpensesExportServiceReadyState();
+    _state = ExpensesExportServiceReadyState();
+    notifyListeners();
   }
 
+  /// Creates a [Stream] of CSV file lines.
   Stream<String> toCSV() async* {
     final buffer = StringBuffer();
 
