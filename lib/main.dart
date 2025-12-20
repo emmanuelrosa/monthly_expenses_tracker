@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:monthly_expenses_tracker/expenses_data/expenses_data_repository.dart';
+import 'package:monthly_expenses_tracker/expenses_export/expenses_export_page.dart';
 import 'package:monthly_expenses_tracker/expenses_import/expenses_import_page.dart';
 
 late ExpensesDataRepository repository;
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
         colorScheme: .fromSeed(seedColor: Colors.amber),
         textTheme: GoogleFonts.lexendTextTheme(),
       ),
-      home: ExpensesDataRepositoryLoader(child: ExpensesImportPage()),
+      home: ExpensesDataRepositoryLoader(child: ExpensesExportPage()),
     );
   }
 }

@@ -63,7 +63,7 @@ void main() {
     expect(repository.hasData, true);
 
     final callback = expectAsync1<void, Uint8List>((_) {});
-    await service.exportExpenses(callback);
+    await service.exportExpenses(completed: callback);
 
     expect(service.state, isA<ExpensesExportServiceReadyState>());
   });

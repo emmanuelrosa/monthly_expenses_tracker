@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:monthly_expenses_tracker/expenses_data/expenses_data_repository.dart';
 
 sealed class ExpensesExportServiceState {
@@ -22,6 +23,9 @@ class ExpensesExportServiceErrorState extends ExpensesExportServiceState {
   final String message;
 
   const ExpensesExportServiceErrorState(this.message);
+
+  @override
+  String toString() => message;
 }
 
 /// This service provides the ability to export the [ExpensesData] to a CSV file.
@@ -43,13 +47,17 @@ class ExpensesExportService with ChangeNotifier {
 
   /// Exports the [ExpenseData] records to a [Uint8List] formatted as CSV.
   /// If provided, the callback is called with the bytes ready to write to a file.
+  /// The [minimumDelay] ensures that the service remains in the exporting state
+  /// for at least some duration. This is to give the UI a chance to show the
+  /// exporting progress.
   /// The [state] is updated along the way to indicate progress, and to yield
   /// to the Dart runtime.
   /// Only call when [state] is [ExpensesExportServiceReadyState].
   /// Throws [AssertionError] if the repository doesn't have any data.
-  Future<void> exportExpenses([
+  Future<void> exportExpenses({
     void Function(Uint8List bytes)? completed,
-  ]) async {
+    Duration minimumDelay = Duration.zero,
+  }) async {
     assert(
       _repository.hasData,
       'exportExpenses() cannot be called when there is no data available.',
@@ -58,23 +66,36 @@ class ExpensesExportService with ChangeNotifier {
     final builder = BytesBuilder();
     final totalNumberOfLines = _repository.numberOfRecords + 1;
     var recordCount = 1;
+    late ExpensesExportServiceState finalState;
+    final startTimestamp = DateTime.timestamp();
 
-    await for (final line in toCSV()) {
-      final bytes = utf8.encode(line);
-      builder.add(bytes);
-      _state = ExpensesExportServiceExportingState(
-        recordCount / totalNumberOfLines,
-      );
+    try {
+      await for (final line in toCSV()) {
+        final bytes = utf8.encode(line);
+        builder.add(bytes);
+        _state = ExpensesExportServiceExportingState(
+          recordCount / totalNumberOfLines,
+        );
+        notifyListeners();
+        recordCount++;
+      }
+
+      if (completed != null) {
+        completed(builder.toBytes());
+      }
+      finalState = ExpensesExportServiceReadyState();
+    } catch (e) {
+      finalState = ExpensesExportServiceErrorState(e.toString());
+    } finally {
+      final elapsedTime = DateTime.timestamp().difference(startTimestamp);
+      final delay = minimumDelay - elapsedTime;
+
+      if (!delay.isNegative) {
+        await Future.delayed(delay);
+      }
+      _state = finalState;
       notifyListeners();
-      recordCount++;
     }
-
-    if (completed != null) {
-      completed(builder.toBytes());
-    }
-
-    _state = ExpensesExportServiceReadyState();
-    notifyListeners();
   }
 
   /// Creates a [Stream] of CSV file lines.
@@ -101,4 +122,30 @@ class ExpensesExportService with ChangeNotifier {
       yield buffer.toString();
     }
   }
+}
+
+class ExpensesExportServiceProvider extends InheritedWidget {
+  final ExpensesExportService service;
+
+  const ExpensesExportServiceProvider({
+    super.key,
+    required this.service,
+    required super.child,
+  });
+
+  static ExpensesExportServiceProvider? maybeOf(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<ExpensesExportServiceProvider>();
+
+  static ExpensesExportServiceProvider of(BuildContext context) {
+    final provider = maybeOf(context);
+    assert(
+      provider != null,
+      'No ExpensesExportServiceProvider found in context.',
+    );
+    return provider!;
+  }
+
+  @override
+  bool updateShouldNotify(covariant ExpensesExportServiceProvider oldWidget) =>
+      this != oldWidget;
 }
