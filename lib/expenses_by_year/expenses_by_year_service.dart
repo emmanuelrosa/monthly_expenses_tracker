@@ -8,7 +8,9 @@ sealed class ExpensesByYearServiceState {
 
 class ExpensesByYearServiceLoadingState extends ExpensesByYearServiceState {}
 
-class ExpensesByYearServiceFinishedState extends ExpensesByYearServiceState {}
+class ExpensesByYearServiceNotReadyState extends ExpensesByYearServiceState {}
+
+class ExpensesByYearServiceReadyState extends ExpensesByYearServiceState {}
 
 class ExpensesByYearServiceErrorState extends ExpensesByYearServiceState {
   final String _message;
@@ -19,37 +21,59 @@ class ExpensesByYearServiceErrorState extends ExpensesByYearServiceState {
 }
 
 /// Provices the total expenses aggregated by year.
-class ExpensesByYearService {
+class ExpensesByYearService with ChangeNotifier {
   final ExpensesDataRepository _repository;
   Map<ExpensesDataYearKey, ExpensesData> _data = {};
-  final ValueNotifier<ExpensesByYearServiceState> _state = ValueNotifier(
-    ExpensesByYearServiceLoadingState(),
-  );
+  ExpensesByYearServiceState _state = ExpensesByYearServiceNotReadyState();
 
-  ExpensesByYearService(ExpensesDataRepository repository)
+  /// The private constructor.
+  ExpensesByYearService._(ExpensesDataRepository repository)
     : _repository = repository;
+
+  /// This acts as the constructor.
+  /// The service is created and then the data is loaded to set the initial state.
+  /// This way, the retured service is fully initialized.
+  static Future<ExpensesByYearService> init(
+    ExpensesDataRepository repository,
+  ) async {
+    final service = ExpensesByYearService._(repository);
+
+    if (repository.hasData) {
+      await service.lookup();
+    }
+
+    return Future.value(service);
+  }
 
   /// Returns a copy of the cached data returned by [lookup()].
   /// Beware that the data is unsorted.
   Map<ExpensesDataYearKey, ExpensesData> get data =>
       Map<ExpensesDataYearKey, ExpensesData>.of(_data);
 
-  /// Returns a [ValueNotifier] of the current [ExpensesByYearServiceState] of the service.
-  /// Listen to the notifier to get notified of state changes.
-  ValueNotifier<ExpensesByYearServiceState> get state => _state;
+  /// Returns the current [ExpensesByYearServiceState] of the service.
+  ExpensesByYearServiceState get state => _state;
 
   /// Retrieves the aggregated data from the [ExpensesDataRepository].
   /// The result is retained internally and can be accessed via the [data] getter.
   /// This is so that the lookup can be triggered and then the Flutter UI can
-  /// respond to the notification emitted by the [state] [ValueNotifier].
+  /// respond to the notification emitted by this service.
   Future<void> lookup() async {
-    _state.value = ExpensesByYearServiceLoadingState();
+    if (!_repository.hasData) {
+      _state = ExpensesByYearServiceNotReadyState();
+      notifyListeners();
+      return Future.value(null);
+    }
+
+    _state = ExpensesByYearServiceLoadingState();
+    notifyListeners();
 
     try {
       _data = await _repository.aggregateByYear();
-      _state.value = ExpensesByYearServiceFinishedState();
+      _state = ExpensesByYearServiceReadyState();
     } catch (e) {
-      _state.value = ExpensesByYearServiceErrorState(e.toString());
+      _state = ExpensesByYearServiceErrorState(e.toString());
+    } finally {
+      notifyListeners();
     }
 
     return Future.value(null);
