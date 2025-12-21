@@ -264,7 +264,7 @@ class ExpensesDataRepository with ChangeNotifier {
         expensesToDelete[entry.key] = entry.value;
         var yearsData = (await _yearsBox.get(
           entry.key.toYearKey().year,
-          defaultValue: {},
+          defaultValue: yearsUpdates[entry.key.toYearKey().year] ?? {},
         ))!.cast<String>();
         yearsData.remove(entry.key.toString());
         yearsUpdates[entry.key.toYearKey().year] = yearsData;
@@ -272,7 +272,7 @@ class ExpensesDataRepository with ChangeNotifier {
         expensesToUpdate[entry.key] = entry.value;
         var yearsData = (await _yearsBox.get(
           entry.key.toYearKey().year,
-          defaultValue: {},
+          defaultValue: yearsUpdates[entry.key.toYearKey().year] ?? {},
         ))!.cast<String>();
         yearsData.add(entry.key.toString());
         yearsUpdates[entry.key.toYearKey().year] = yearsData;

@@ -57,6 +57,7 @@ void main() {
     expect(data[year1]?.fitness, 720.0);
     expect(data[year1]?.education, 180.0);
     expect(data[year1]?.entertainment, 1440.0);
+    expect(data[year1]?.total, 21540.0);
 
     expect(data[year2]?.housing, 18000.0);
     expect(data[year2]?.food, 4200.0);
@@ -64,6 +65,7 @@ void main() {
     expect(data[year2]?.fitness, 780.0);
     expect(data[year2]?.education, 240.0);
     expect(data[year2]?.entertainment, 1500.0);
+    expect(data[year2]?.total, 28560);
 
     expect(data[year3]?.housing, 24000.0);
     expect(data[year3]?.food, 6000.0);
@@ -71,6 +73,7 @@ void main() {
     expect(data[year3]?.fitness, 780.0);
     expect(data[year3]?.education, 0.0);
     expect(data[year3]?.entertainment, 840.0);
+    expect(data[year3]?.total, 36420.0);
   });
 }
 

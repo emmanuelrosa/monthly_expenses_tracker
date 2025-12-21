@@ -52,4 +52,7 @@ class ExpensesData with _$ExpensesData {
     fitness: math.max(0, fitness + other.fitness),
     education: math.max(0, education + other.education),
   );
+
+  double get total =>
+      housing + food + transportation + entertainment + fitness + education;
 }
