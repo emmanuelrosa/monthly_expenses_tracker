@@ -307,17 +307,6 @@ class _ReadyStateWidgetState extends State<_ReadyStateWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Wrap(
-              children: [
-                ExpenseCategoryCard.fromCategory(categories.housing),
-                ExpenseCategoryCard.fromCategory(categories.food),
-                ExpenseCategoryCard.fromCategory(categories.transportation),
-                ExpenseCategoryCard.fromCategory(categories.entertainment),
-                ExpenseCategoryCard.fromCategory(categories.fitness),
-                ExpenseCategoryCard.fromCategory(categories.education),
-              ],
-            ),
-            SizedBox(height: 10),
             DropdownMenu(
               label: Text(
                 'Year',
@@ -340,6 +329,18 @@ class _ReadyStateWidgetState extends State<_ReadyStateWidget> {
                   )
                   .toList(),
             ),
+            SizedBox(height: 10),
+            Wrap(
+              children: [
+                ExpenseCategoryCard.fromCategory(categories.housing),
+                ExpenseCategoryCard.fromCategory(categories.food),
+                ExpenseCategoryCard.fromCategory(categories.transportation),
+                ExpenseCategoryCard.fromCategory(categories.entertainment),
+                ExpenseCategoryCard.fromCategory(categories.fitness),
+                ExpenseCategoryCard.fromCategory(categories.education),
+              ],
+            ),
+            SizedBox(height: 10),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
