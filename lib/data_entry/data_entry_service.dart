@@ -23,17 +23,15 @@ typedef Month = ({int number, String name});
 /// A facade that provides the business logic of entering expenses into the application.
 /// Uses an [ExpensesDataRepository] to store data.
 /// Maintains internal state to make it easy to use with the Flutter widget tree.
-/// Uses a [ValueNotifier] to emit information about state changes.
-class DataEntryService {
+/// Implements [ChangeNotifier] to emit information about state changes.
+class DataEntryService with ChangeNotifier {
   final ExpensesDataRepository _repository;
 
   // Internal state
   int _month = 1;
   int _year = 1969;
   ExpensesData? _data;
-  final ValueNotifier<DataEntryServiceState> _state = ValueNotifier(
-    DataEntryServiceLoadingState(),
-  );
+  DataEntryServiceState _state = DataEntryServiceLoadingState();
 
   /// Private constructor.
   DataEntryService._(
@@ -88,18 +86,21 @@ class DataEntryService {
   int get month => _month;
   int get year => _year;
   ExpensesData? get data => _data?.copyWith();
-  ValueNotifier<DataEntryServiceState> get state => _state;
+  DataEntryServiceState get state => _state;
 
   /// Updates the internal state using the expenses data for the month/year reflected in the state.
   Future<void> _load() async {
-    _state.value = DataEntryServiceLoadingState();
+    _state = DataEntryServiceLoadingState();
+    notifyListeners();
 
     try {
       final key = ExpensesDataKey(month: _month, year: _year);
       _data = await _repository.lookup(key);
-      _state.value = DataEntryServiceFinishedState();
+      _state = DataEntryServiceFinishedState();
     } catch (e) {
-      _state.value = DataEntryServiceErrorState(e.toString());
+      _state = DataEntryServiceErrorState(e.toString());
+    } finally {
+      notifyListeners();
     }
   }
 
@@ -146,7 +147,9 @@ class DataEntryService {
       await _repository.update(key: key, data: data);
       _data = data;
     } catch (e) {
-      _state.value = DataEntryServiceErrorState(e.toString());
+      _state = DataEntryServiceErrorState(e.toString());
+    } finally {
+      notifyListeners();
     }
   }
 }

@@ -32,7 +32,7 @@ void main() {
     expect(service.month, 6);
     expect(service.year, 2020);
     expect(service.data, null);
-    expect(service.state.value, isA<DataEntryServiceFinishedState>());
+    expect(service.state, isA<DataEntryServiceFinishedState>());
   });
 
   test('invalid load', () {
@@ -71,7 +71,7 @@ void main() {
     expect(service.data?.entertainment, 200);
     expect(service.data?.fitness, 60);
     expect(service.data?.education, 0);
-    expect(service.state.value, isA<DataEntryServiceFinishedState>());
+    expect(service.state, isA<DataEntryServiceFinishedState>());
 
     await service.update(
       housing: 0,
@@ -90,7 +90,7 @@ void main() {
     expect(service.data?.entertainment, 200);
     expect(service.data?.fitness, 120);
     expect(service.data?.education, 0);
-    expect(service.state.value, isA<DataEntryServiceFinishedState>());
+    expect(service.state, isA<DataEntryServiceFinishedState>());
   });
 
   test('update', () {
