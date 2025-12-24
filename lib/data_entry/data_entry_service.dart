@@ -83,6 +83,11 @@ class DataEntryService with ChangeNotifier {
     (number: DateTime.december, name: 'December'),
   ];
 
+  List<int> get years => List.generate(
+    DateTime.now().year - 1969 + 1,
+    (index) => 1969 + index,
+  ).reversed.toList();
+
   int get month => _month;
   int get year => _year;
   ExpensesData? get data => _data?.copyWith();
