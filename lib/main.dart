@@ -24,7 +24,6 @@ class MyApp extends StatelessWidget {
         colorScheme: .fromSeed(seedColor: Colors.amber),
         textTheme: GoogleFonts.lexendTextTheme(),
       ),
-      //home: ExpensesDataRepositoryLoader(child: ExpensesByMonthPage()),
       home: ExpensesDataRepositoryLoader(child: ExpensesByMonthPage()),
     );
   }

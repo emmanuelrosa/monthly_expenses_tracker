@@ -290,7 +290,7 @@ class _ReadyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            OverflowBar(
+            Wrap(
               children: [
                 ExpenseCategoryCard.fromCategory(categories.housing),
                 ExpenseCategoryCard.fromCategory(categories.food),
