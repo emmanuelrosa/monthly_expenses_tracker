@@ -13,7 +13,7 @@ void main() {
     tempDir = await Directory.systemTemp.createTemp('monthly_expenses_tracker');
     repository = await ExpensesDataRepository.init(directory: tempDir);
     final today = DateTime.parse('2020-01-30 02:20:54');
-    service = DataEntryService(repository, today: today);
+    service = await DataEntryService.init(repository, today: today);
   });
 
   tearDown(() async {

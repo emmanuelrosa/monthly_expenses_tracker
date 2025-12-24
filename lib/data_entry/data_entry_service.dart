@@ -35,9 +35,8 @@ class DataEntryService {
     DataEntryServiceLoadingState(),
   );
 
-  /// Initializes the [DataEntryService].
-  /// By default, the month is set to the prior month.
-  DataEntryService(
+  /// Private constructor.
+  DataEntryService._(
     ExpensesDataRepository repository, {
     DateTime? today,
     bool initWithPriorMonth = true,
@@ -51,8 +50,23 @@ class DataEntryService {
       _month = finalToday.month;
       _year = finalToday.year;
     }
+  }
 
-    _load();
+  /// Initializes the [DataEntryService].
+  /// By default, the month is set to the prior month.
+  static Future<DataEntryService> init(
+    ExpensesDataRepository repository, {
+    DateTime? today,
+    bool initWithPriorMonth = true,
+  }) async {
+    final service = DataEntryService._(
+      repository,
+      today: today,
+      initWithPriorMonth: initWithPriorMonth,
+    );
+    await service._load();
+
+    return Future.value(service);
   }
 
   /// Return a static list of [Month]s.
