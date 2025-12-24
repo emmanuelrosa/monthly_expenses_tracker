@@ -58,7 +58,9 @@ class _ExpensesByMonthServiceLoaded extends StatelessWidget {
           ),
           backgroundColor: backgroundColor,
           body: switch (service.state) {
-            ExpensesByMonthServiceLoadingState() => _ReloadingStateWidget(),
+            ExpensesByMonthServiceLoadingState() => _ReadyStateWidget(
+              service: service,
+            ),
             ExpensesByMonthServiceReadyState() => _ReadyStateWidget(
               service: service,
             ),
@@ -307,27 +309,10 @@ class _ReadyStateWidgetState extends State<_ReadyStateWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            DropdownMenu(
-              label: Text(
-                'Year',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: theme.primaryColor,
-                ),
-              ),
-              textStyle: theme.textTheme.titleLarge?.copyWith(
-                color: theme.primaryColor,
-              ),
+            _YearSelector(
               controller: controller,
+              years: widget.service.years,
               onSelected: _lookupByYear,
-              requestFocusOnTap: false,
-              dropdownMenuEntries: widget.service.years
-                  .map(
-                    (yearKey) => DropdownMenuEntry(
-                      value: yearKey,
-                      label: yearKey.year.toString(),
-                    ),
-                  )
-                  .toList(),
             ),
             SizedBox(height: 10),
             Wrap(
@@ -386,4 +371,66 @@ class _ReadyStateWidgetState extends State<_ReadyStateWidget> {
     12 => 'Dec',
     _ => throw StateError('Month can only be 1..12.'),
   };
+}
+
+/// A custom [Widget] for selecting a [ExpensesDataYearKey] from a list.
+/// By default the years are rendered as [Chip]s, but if there are many years,
+/// or the screen is very narrow, it will render as a [DropdownMenu].
+class _YearSelector extends StatelessWidget {
+  final List<ExpensesDataYearKey> years;
+  final TextEditingController controller;
+  final void Function(ExpensesDataYearKey?) onSelected;
+
+  const _YearSelector({
+    required this.years,
+    required this.onSelected,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return LayoutBuilder(
+      builder: (context, constraints) =>
+          constraints.maxWidth <= 500 || years.length > 24
+          ? _renderAsDropdown(theme)
+          : _renderAsChips(theme),
+    );
+  }
+
+  Widget _renderAsDropdown(ThemeData theme) => DropdownMenu(
+    label: Text(
+      'Year',
+      style: theme.textTheme.labelLarge?.copyWith(color: theme.primaryColor),
+    ),
+    textStyle: theme.textTheme.titleLarge?.copyWith(color: theme.primaryColor),
+    controller: controller,
+    onSelected: onSelected,
+    requestFocusOnTap: false,
+    dropdownMenuEntries: years
+        .map(
+          (yearKey) =>
+              DropdownMenuEntry(value: yearKey, label: yearKey.year.toString()),
+        )
+        .toList(),
+  );
+
+  Widget _renderAsChips(ThemeData theme) {
+    return Wrap(
+      spacing: 10,
+      children: years
+          .map(
+            (yearKey) => ChoiceChip(
+              label: Text(yearKey.year.toString()),
+              selected: controller.text == yearKey.year.toString(),
+              onSelected: (_) {
+                controller.text = yearKey.year.toString();
+                onSelected(yearKey);
+              },
+            ),
+          )
+          .toList(),
+    );
+  }
 }
