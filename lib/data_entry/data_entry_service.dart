@@ -121,7 +121,6 @@ class DataEntryService with ChangeNotifier {
   }
 
   /// Adds/updates the monthly expenses record for the month and year specified when [load()] was executed.
-  /// The expenses provided are added/deducted from the values loaded when [load()] was executed.
   Future<void> update({
     required double housing,
     required double food,
@@ -131,19 +130,17 @@ class DataEntryService with ChangeNotifier {
     required double education,
   }) async {
     final key = ExpensesDataKey(month: _month, year: _year);
-    final tempData = ExpensesData(
-      housing: housing,
-      food: food,
-      transportation: transportation,
-      fitness: fitness,
-      entertainment: entertainment,
-      education: education,
-    );
-
-    // The '+' operator in [ExpensesData] enforces as minimum expense value of 0.
-    final data = _data == null ? tempData : _data! + tempData;
 
     try {
+      // The constructor throws if any of the values are negative.
+      final data = ExpensesData(
+        housing: housing,
+        food: food,
+        transportation: transportation,
+        fitness: fitness,
+        entertainment: entertainment,
+        education: education,
+      );
       await _repository.update(key: key, data: data);
       _data = data;
     } catch (e) {

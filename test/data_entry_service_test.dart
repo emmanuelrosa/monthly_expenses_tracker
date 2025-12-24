@@ -72,28 +72,43 @@ void main() {
     expect(service.data?.fitness, 60);
     expect(service.data?.education, 0);
     expect(service.state, isA<DataEntryServiceFinishedState>());
+  });
 
+  test('invalid update', () async {
+    await service.setDate(month: 5, year: 2019);
+
+    // Valid
+    await service.update(
+      housing: 1000,
+      food: 500,
+      transportation: 300,
+      entertainment: 200,
+      fitness: 60,
+      education: 0,
+    );
+
+    // Invalid
     await service.update(
       housing: 0,
       food: 0,
       transportation: 0,
       entertainment: 0,
-      fitness: 60,
+      fitness: 50,
       education: -100,
     );
 
+    expect(service.state, isA<DataEntryServiceErrorState>());
     expect(service.month, 5);
     expect(service.year, 2019);
     expect(service.data?.housing, 1000);
     expect(service.data?.food, 500);
     expect(service.data?.transportation, 300);
     expect(service.data?.entertainment, 200);
-    expect(service.data?.fitness, 120);
+    expect(service.data?.fitness, 60);
     expect(service.data?.education, 0);
-    expect(service.state, isA<DataEntryServiceFinishedState>());
   });
 
-  test('update', () {
+  test('months', () {
     expect(service.months.length, 12);
     expect(service.months[3].number, 4);
     expect(service.months[3].name, 'April');
