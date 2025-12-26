@@ -41,23 +41,10 @@ class _ExpensesByMonthServiceLoaded extends StatelessWidget {
           ExpensesByMonthServiceNotReadyState() => theme.colorScheme.secondary,
           ExpensesByMonthServiceErrorState() => theme.colorScheme.secondary,
         };
-        final titleColor = switch (service.state) {
-          ExpensesByMonthServiceLoadingState() => theme.primaryColor,
-          ExpensesByMonthServiceReadyState() => theme.primaryColor,
-          ExpensesByMonthServiceNotReadyState() => theme.primaryColorLight,
-          ExpensesByMonthServiceErrorState() => theme.primaryColorLight,
-        };
 
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: backgroundColor,
-            title: Text(
-              'Expenses by month',
-              style: theme.textTheme.titleLarge?.copyWith(color: titleColor),
-            ),
-          ),
-          backgroundColor: backgroundColor,
-          body: switch (service.state) {
+        return Container(
+          color: backgroundColor,
+          child: switch (service.state) {
             ExpensesByMonthServiceLoadingState() => _ReadyStateWidget(
               service: service,
             ),
@@ -77,24 +64,32 @@ class _ExpensesByMonthServiceLoaded extends StatelessWidget {
 
 class _LoadingStateWidget extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            double size = max(100, min(constraints.maxWidth - 150, 200));
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final backgroundColor = theme.colorScheme.inversePrimary;
 
-            return SizedBox(
-              width: size,
-              height: size,
-              child: CircularProgressIndicator(strokeWidth: 10),
-            );
-          },
+    return Container(
+      color: backgroundColor,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                double size = max(100, min(constraints.maxWidth - 150, 200));
+
+                return SizedBox(
+                  width: size,
+                  height: size,
+                  child: CircularProgressIndicator(strokeWidth: 10),
+                );
+              },
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 /// Dependency injection for [ExpensesByMonthService].
@@ -150,7 +145,7 @@ class _ExpensesByMonthServiceLoaderState
   void initState() {
     super.initState();
     _serviceFuture = Future<ExpensesByMonthService>.delayed(
-      Duration(milliseconds: 500),
+      Duration(milliseconds: 250),
       () => ExpensesByMonthService.init(widget.repository),
     );
   }

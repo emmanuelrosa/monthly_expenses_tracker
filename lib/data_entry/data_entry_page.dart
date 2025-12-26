@@ -47,7 +47,7 @@ class _DataEntryServiceLoaderState extends State<_DataEntryServiceLoader> {
   void initState() {
     super.initState();
     _serviceFuture = Future<DataEntryService>.delayed(
-      Duration(milliseconds: 500),
+      Duration(milliseconds: 250),
       () => DataEntryService.init(widget.repository),
     );
   }
@@ -71,24 +71,32 @@ class _DataEntryServiceLoaderState extends State<_DataEntryServiceLoader> {
 /// The [Widget] displayed while the [DataEntryService] is being initialized.
 class _LoadingStateWidget extends StatelessWidget {
   @override
-  Widget build(BuildContext context) => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            double size = max(100, min(constraints.maxWidth - 150, 200));
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final backgroundColor = theme.colorScheme.inversePrimary;
 
-            return SizedBox(
-              width: size,
-              height: size,
-              child: CircularProgressIndicator(strokeWidth: 10),
-            );
-          },
+    return Container(
+      color: backgroundColor,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            LayoutBuilder(
+              builder: (context, constraints) {
+                double size = max(100, min(constraints.maxWidth - 150, 200));
+
+                return SizedBox(
+                  width: size,
+                  height: size,
+                  child: CircularProgressIndicator(strokeWidth: 10),
+                );
+              },
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
 
 /// Dependency injection for [DataEntryService].
@@ -135,22 +143,10 @@ class _DataEntryServiceLoadedState extends State<_DataEntryServiceLoaded> {
           DataEntryServiceFinishedState() => theme.colorScheme.inversePrimary,
           DataEntryServiceErrorState() => theme.colorScheme.secondary,
         };
-        final titleColor = switch (service.state) {
-          DataEntryServiceLoadingState() => theme.primaryColor,
-          DataEntryServiceFinishedState() => theme.primaryColor,
-          DataEntryServiceErrorState() => theme.primaryColorLight,
-        };
 
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: backgroundColor,
-            title: Text(
-              'Add expenses',
-              style: theme.textTheme.titleLarge?.copyWith(color: titleColor),
-            ),
-          ),
-          backgroundColor: backgroundColor,
-          body: switch (service.state) {
+        return Container(
+          color: backgroundColor,
+          child: switch (service.state) {
             DataEntryServiceLoadingState() => _FinishedStateWidget(
               service: service,
             ),
@@ -370,9 +366,11 @@ class _FinishedStateWidgetState extends State<_FinishedStateWidget> {
             SizedBox(height: 10),
             LayoutBuilder(
               builder: (context, constraints) {
-                final size = constraints.maxWidth < constraints.maxHeight
-                    ? constraints.maxWidth
-                    : constraints.maxHeight;
+                final size =
+                    (constraints.maxWidth < constraints.maxHeight
+                        ? constraints.maxWidth
+                        : constraints.maxHeight) *
+                    0.5;
 
                 return SizedBox(
                   width: size,

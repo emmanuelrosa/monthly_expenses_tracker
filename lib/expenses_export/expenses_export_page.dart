@@ -34,25 +34,10 @@ class ExpensesExportPage extends StatelessWidget {
                 ExpensesExportServiceExportingState() =>
                   theme.colorScheme.inversePrimary,
               };
-              final titleColor = switch (service.state) {
-                ExpensesExportServiceReadyState() => theme.primaryColor,
-                ExpensesExportServiceNotReadyState() => theme.primaryColorLight,
-                ExpensesExportServiceErrorState() => theme.primaryColorLight,
-                ExpensesExportServiceExportingState() => theme.primaryColor,
-              };
 
-              return Scaffold(
-                backgroundColor: backgroundColor,
-                appBar: AppBar(
-                  backgroundColor: backgroundColor,
-                  title: Text(
-                    'Export expenses',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: titleColor,
-                    ),
-                  ),
-                ),
-                body: switch (service.state) {
+              return Container(
+                color: backgroundColor,
+                child: switch (service.state) {
                   ExpensesExportServiceReadyState() => _ReadyStateWidget(
                     service: service,
                   ),

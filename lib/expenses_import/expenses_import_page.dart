@@ -81,24 +81,10 @@ class ExpensesImportPage extends StatelessWidget {
                 ExpensesImportServiceImportingState() =>
                   theme.colorScheme.inversePrimary,
               };
-              final titleColor = switch (service.state) {
-                ExpensesImportServiceReadyState() => theme.primaryColor,
-                ExpensesImportServiceErrorState() => theme.primaryColorLight,
-                ExpensesImportServiceImportingState() => theme.primaryColor,
-              };
 
-              return Scaffold(
-                backgroundColor: backgroundColor,
-                appBar: AppBar(
-                  backgroundColor: backgroundColor,
-                  title: Text(
-                    'Import expenses',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      color: titleColor,
-                    ),
-                  ),
-                ),
-                body: switch (service.state) {
+              return Container(
+                color: backgroundColor,
+                child: switch (service.state) {
                   ExpensesImportServiceReadyState() => _ReadyStateWidget(
                     service: service,
                   ),

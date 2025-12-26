@@ -374,7 +374,7 @@ class _ExpensesDataRepositoryLoaderState
   String? errorMessage;
 
   void _initializeRepository() async {
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(Duration(milliseconds: 250));
 
     try {
       final directory = await widget.dataDirectory;

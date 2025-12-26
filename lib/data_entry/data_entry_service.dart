@@ -147,7 +147,7 @@ class DataEntryService with ChangeNotifier {
         education: education,
       );
       await _repository.update(key: key, data: data);
-      _data = data;
+      _data = data.total > 0 ? data : null;
     } catch (e) {
       _state = DataEntryServiceErrorState(e.toString());
     } finally {

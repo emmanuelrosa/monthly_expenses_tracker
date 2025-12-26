@@ -47,16 +47,9 @@ class _ExpensesByYearServiceLoaded extends StatelessWidget {
           ExpensesByYearServiceErrorState() => theme.primaryColorLight,
         };
 
-        return Scaffold(
-          appBar: AppBar(
-            backgroundColor: backgroundColor,
-            title: Text(
-              'Expenses by year',
-              style: theme.textTheme.titleLarge?.copyWith(color: titleColor),
-            ),
-          ),
-          backgroundColor: backgroundColor,
-          body: switch (service.state) {
+        return Container(
+          color: backgroundColor,
+          child: switch (service.state) {
             ExpensesByYearServiceLoadingState() => throw StateError(
               'The ExpensesByYearService should have already loaded.',
             ),
@@ -126,7 +119,7 @@ class _ExpensesByYearServiceLoaderState
   void initState() {
     super.initState();
     _serviceFuture = Future<ExpensesByYearService>.delayed(
-      Duration(milliseconds: 500),
+      Duration(milliseconds: 250),
       () => ExpensesByYearService.init(widget.repository),
     );
   }
@@ -157,18 +150,9 @@ class _LoadingStateWidget extends StatelessWidget {
     final theme = Theme.of(context);
     final backgroundColor = theme.colorScheme.inversePrimary;
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        title: Text(
-          'Expenses by year',
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: theme.primaryColor,
-          ),
-        ),
-      ),
-      backgroundColor: backgroundColor,
-      body: Center(
+    return Container(
+      color: backgroundColor,
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
