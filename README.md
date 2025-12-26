@@ -15,6 +15,10 @@ There's no need to sign up!
 
 Simply go to [https://emmanuelrosa.github.io/monthly_expenses_tracker/](https://emmanuelrosa.github.io/monthly_expenses_tracker/).
 
+## Build Notes
+
+- When building the web release for GitHub pages, you need to specify the base URL with the repository name. Ex: `flutter build web --base-href /monthly_expenses_tracker`
+
 ## Credits
 
 - This app is based on Jacinto's [expense-tracker](https://github.com/JacintoDesign/expense-tracker/) project.
