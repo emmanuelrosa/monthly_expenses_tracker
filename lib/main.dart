@@ -132,55 +132,68 @@ class _MyHomePageState extends State<MyHomePage> {
         )
         .toList();
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: theme.colorScheme.inversePrimary,
-        title: Text(
-          'MONTHLY EXPENSES TRACKER',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            color: theme.primaryColor,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool useNarrowLayout = constraints.maxWidth < 900;
+        final menu = Container(
+          color: backgroundColor,
+          child: Padding(
+            padding: useNarrowLayout
+                ? const EdgeInsets.all(0.0)
+                : const EdgeInsets.all(10.0),
+            child: SizedBox(
+              width: 300,
+              child: Container(
+                color: theme.colorScheme.inversePrimary,
+                child: MenuSidebar(
+                  topItems: menuItems
+                      .where((it) => it.showOnTop)
+                      .map((it) => it.item)
+                      .toList(),
+                  bottomItems: menuItems
+                      .where((it) => !it.showOnTop)
+                      .map((it) => it.item)
+                      .toList(),
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
-      body: Row(
-        children: [
-          Container(
-            color: backgroundColor,
-            child: Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: SizedBox(
-                width: 300,
+        );
+
+        return Scaffold(
+          appBar: AppBar(
+            foregroundColor: theme.colorScheme.primary,
+            backgroundColor: theme.colorScheme.inversePrimary,
+            title: Text(
+              'MONTHLY EXPENSES TRACKER',
+              style: theme.textTheme.headlineSmall?.copyWith(
+                color: theme.primaryColor,
+              ),
+            ),
+          ),
+          drawer: useNarrowLayout ? Drawer(child: menu) : null,
+          body: Row(
+            children: [
+              if (!useNarrowLayout) menu,
+              Expanded(
                 child: Container(
-                  color: theme.colorScheme.inversePrimary,
-                  child: MenuSidebar(
-                    topItems: menuItems
-                        .where((it) => it.showOnTop)
-                        .map((it) => it.item)
-                        .toList(),
-                    bottomItems: menuItems
-                        .where((it) => !it.showOnTop)
-                        .map((it) => it.item)
-                        .toList(),
+                  color: backgroundColor,
+                  child: Padding(
+                    padding: useNarrowLayout
+                        ? const EdgeInsets.only()
+                        : const EdgeInsets.only(
+                            top: 10.0,
+                            right: 10.0,
+                            bottom: 10.0,
+                          ),
+                    child: selectedPage.create(),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-          Expanded(
-            child: Container(
-              color: backgroundColor,
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  top: 10.0,
-                  right: 10.0,
-                  bottom: 10.0,
-                ),
-                child: selectedPage.create(),
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

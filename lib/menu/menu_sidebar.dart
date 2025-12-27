@@ -23,6 +23,8 @@ class MenuSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final scaffold = Scaffold.of(context);
+
         return Column(
           children: [
             Expanded(
@@ -30,7 +32,10 @@ class MenuSidebar extends StatelessWidget {
                 children: topItems
                     .map(
                       (item) => GestureDetector(
-                        onTap: item.onSelected,
+                        onTap: () {
+                          scaffold.closeDrawer();
+                          item.onSelected();
+                        },
                         child: _MenuSidebarItemWidget(item, constraints),
                       ),
                     )
@@ -41,7 +46,10 @@ class MenuSidebar extends StatelessWidget {
               children: bottomItems
                   .map(
                     (item) => GestureDetector(
-                      onTap: item.onSelected,
+                      onTap: () {
+                        scaffold.closeDrawer();
+                        item.onSelected();
+                      },
                       child: _MenuSidebarItemWidget(item, constraints),
                     ),
                   )
