@@ -397,24 +397,22 @@ class _FinishedStateWidgetState extends State<_FinishedStateWidget> {
 
   void _setDate({required int year, required int month}) async {
     await widget.service.setDate(month: month, year: year);
+    final expenses = widget.service.data;
 
-    if (widget.service.data != null) {
-      final data = widget.service.data!;
-      setState(() {
-        housingController.text = data.housing.toString();
-        foodController.text = data.food.toString();
-        transportationController.text = data.transportation.toString();
-        entertainmentController.text = data.entertainment.toString();
-        fitnessController.text = data.fitness.toString();
-        educationController.text = data.education.toString();
-        housingController.text = data.housing.toString();
-        foodController.text = data.food.toString();
-        transportationController.text = data.transportation.toString();
-        entertainmentController.text = data.entertainment.toString();
-        fitnessController.text = data.fitness.toString();
-        educationController.text = data.education.toString();
-      });
-    }
+    setState(() {
+      housingController.text = expenses?.housing.toString() ?? '';
+      foodController.text = expenses?.food.toString() ?? '';
+      transportationController.text = expenses?.transportation.toString() ?? '';
+      entertainmentController.text = expenses?.entertainment.toString() ?? '';
+      fitnessController.text = expenses?.fitness.toString() ?? '';
+      educationController.text = expenses?.education.toString() ?? '';
+      housingController.text = expenses?.housing.toString() ?? '';
+      foodController.text = expenses?.food.toString() ?? '';
+      transportationController.text = expenses?.transportation.toString() ?? '';
+      entertainmentController.text = expenses?.entertainment.toString() ?? '';
+      fitnessController.text = expenses?.fitness.toString() ?? '';
+      educationController.text = expenses?.education.toString() ?? '';
+    });
   }
 
   void _update(BuildContext context) async {
