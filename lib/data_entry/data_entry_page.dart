@@ -252,144 +252,164 @@ class _FinishedStateWidgetState extends State<_FinishedStateWidget> {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: [
-            Wrap(
-              spacing: 10.0,
-              runSpacing: 10.0,
-              children: [
-                DropdownMenu<int>(
-                  label: Text(
-                    'Year',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.primaryColor,
-                    ),
-                  ),
-                  textStyle: theme.textTheme.titleLarge?.copyWith(
-                    color: theme.primaryColor,
-                  ),
-                  menuHeight: 400,
-                  width: 200.0,
-                  requestFocusOnTap: false,
-                  controller: yearController,
-                  onSelected: (year) {
-                    if (year != null) {
-                      _setDate(year: year, month: widget.service.month);
-                    }
-                  },
-                  dropdownMenuEntries: widget.service.years
-                      .map(
-                        (year) => DropdownMenuEntry(
-                          value: year,
-                          label: year.toString(),
-                        ),
-                      )
-                      .toList(),
-                ),
-                DropdownMenu<Month>(
-                  label: Text(
-                    'Month',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      color: theme.primaryColor,
-                    ),
-                  ),
-                  textStyle: theme.textTheme.titleLarge?.copyWith(
-                    color: theme.primaryColor,
-                  ),
-                  menuHeight: 400.0,
-                  width: 200.0,
-                  requestFocusOnTap: false,
-                  controller: monthController,
-                  onSelected: (month) {
-                    if (month != null) {
-                      _setDate(year: widget.service.year, month: month.number);
-                    }
-                  },
-                  dropdownMenuEntries: widget.service.months
-                      .map(
-                        (month) =>
-                            DropdownMenuEntry(value: month, label: month.name),
-                      )
-                      .toList(),
-                ),
-              ],
-            ),
-            SizedBox(height: 10.0),
-            Wrap(
-              spacing: 10.0,
-              runSpacing: 10.0,
-              children:
-                  [
-                        ('Housing', housingController),
-                        ('Food', foodController),
-                        ('Transportation', transportationController),
-                        ('Entertainment', entertainmentController),
-                        ('Fitness', fitnessController),
-                        ('Education', educationController),
-                      ]
-                      .map(
-                        (tuple) => SizedBox(
-                          width: 200,
-                          child: TextField(
-                            controller: tuple.$2,
-                            keyboardType: .number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            decoration: InputDecoration(label: Text(tuple.$1)),
-                          ),
-                        ),
-                      )
-                      .toList(),
-            ),
-            SizedBox(height: 10.0),
-            FilledButton.tonal(
-              onPressed: () => _update(context),
-              child: Text(
-                'Save',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: theme.primaryColor,
-                ),
-              ),
-            ),
-            SizedBox(height: 10),
-            Wrap(
-              children: [
-                ExpenseCategoryCard.fromCategory(categories.housing),
-                ExpenseCategoryCard.fromCategory(categories.food),
-                ExpenseCategoryCard.fromCategory(categories.transportation),
-                ExpenseCategoryCard.fromCategory(categories.entertainment),
-                ExpenseCategoryCard.fromCategory(categories.fitness),
-                ExpenseCategoryCard.fromCategory(categories.education),
-              ],
-            ),
-            SizedBox(height: 10),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final size =
-                    (constraints.maxWidth < constraints.maxHeight
-                        ? constraints.maxWidth
-                        : constraints.maxHeight) *
-                    0.5;
-
-                return SizedBox(
-                  width: size,
-                  height: size,
-                  child: widget.service.data == null
-                      ? Container(
-                          decoration: BoxDecoration(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SizedBox(
+              width: min(700, constraints.maxWidth),
+              child: ListView(
+                padding: EdgeInsets.only(right: 20.0, top: 20.0),
+                children: [
+                  Wrap(
+                    spacing: 10.0,
+                    runSpacing: 10.0,
+                    alignment: .center,
+                    children: [
+                      DropdownMenu<int>(
+                        label: Text(
+                          'Year',
+                          style: theme.textTheme.labelLarge?.copyWith(
                             color: theme.primaryColor,
-                            shape: BoxShape.circle,
                           ),
-                        )
-                      : ExpensesPieChart(
-                          expenses: widget.service.data!,
-                          categories: categories,
                         ),
-                );
-              },
-            ),
-          ],
+                        textStyle: theme.textTheme.titleLarge?.copyWith(
+                          color: theme.primaryColor,
+                        ),
+                        menuHeight: 400,
+                        width: 200.0,
+                        requestFocusOnTap: false,
+                        controller: yearController,
+                        onSelected: (year) {
+                          if (year != null) {
+                            _setDate(year: year, month: widget.service.month);
+                          }
+                        },
+                        dropdownMenuEntries: widget.service.years
+                            .map(
+                              (year) => DropdownMenuEntry(
+                                value: year,
+                                label: year.toString(),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      DropdownMenu<Month>(
+                        label: Text(
+                          'Month',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: theme.primaryColor,
+                          ),
+                        ),
+                        textStyle: theme.textTheme.titleLarge?.copyWith(
+                          color: theme.primaryColor,
+                        ),
+                        menuHeight: 400.0,
+                        width: 200.0,
+                        requestFocusOnTap: false,
+                        controller: monthController,
+                        onSelected: (month) {
+                          if (month != null) {
+                            _setDate(
+                              year: widget.service.year,
+                              month: month.number,
+                            );
+                          }
+                        },
+                        dropdownMenuEntries: widget.service.months
+                            .map(
+                              (month) => DropdownMenuEntry(
+                                value: month,
+                                label: month.name,
+                              ),
+                            )
+                            .toList(),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10.0),
+                  Wrap(
+                    spacing: 10.0,
+                    runSpacing: 10.0,
+                    alignment: .center,
+                    children:
+                        [
+                              ('Housing', housingController),
+                              ('Food', foodController),
+                              ('Transportation', transportationController),
+                              ('Entertainment', entertainmentController),
+                              ('Fitness', fitnessController),
+                              ('Education', educationController),
+                            ]
+                            .map(
+                              (tuple) => SizedBox(
+                                width: 200,
+                                child: TextField(
+                                  controller: tuple.$2,
+                                  keyboardType: .number,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                  ],
+                                  decoration: InputDecoration(
+                                    label: Text(tuple.$1),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                  ),
+                  SizedBox(height: 10.0),
+                  FilledButton.tonal(
+                    onPressed: () => _update(context),
+                    child: Text(
+                      'Save',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: theme.primaryColor,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Wrap(
+                    alignment: .center,
+                    children: [
+                      ExpenseCategoryCard.fromCategory(categories.housing),
+                      ExpenseCategoryCard.fromCategory(categories.food),
+                      ExpenseCategoryCard.fromCategory(
+                        categories.transportation,
+                      ),
+                      ExpenseCategoryCard.fromCategory(
+                        categories.entertainment,
+                      ),
+                      ExpenseCategoryCard.fromCategory(categories.fitness),
+                      ExpenseCategoryCard.fromCategory(categories.education),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final size = constraints.maxWidth < constraints.maxHeight
+                          ? constraints.maxWidth
+                          : constraints.maxHeight;
+
+                      return SizedBox(
+                        width: size,
+                        height: size,
+                        child: widget.service.data == null
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  color: theme.primaryColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              )
+                            : ExpensesPieChart(
+                                expenses: widget.service.data!,
+                                categories: categories,
+                              ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
