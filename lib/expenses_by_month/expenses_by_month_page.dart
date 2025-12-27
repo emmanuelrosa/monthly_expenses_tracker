@@ -304,6 +304,19 @@ class _ReadyStateWidgetState extends State<_ReadyStateWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Card(
+              color: theme.primaryColor,
+              child: ListTile(
+                leading: Icon(Icons.info, color: theme.primaryColorLight),
+                title: Text(
+                  'Select a year below to view your monthly expenses.',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: theme.primaryColorLight,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
             _YearSelector(
               controller: controller,
               years: widget.service.years,
