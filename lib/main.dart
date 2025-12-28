@@ -9,6 +9,8 @@ import 'package:monthly_expenses_tracker/expenses_export/expenses_export_page.da
 import 'package:monthly_expenses_tracker/expenses_import/expenses_import_page.dart';
 import 'package:monthly_expenses_tracker/menu/menu_sidebar.dart';
 
+final title = 'EXPENSES TRACKER';
+
 late ExpensesDataRepository repository;
 
 void main() async {
@@ -22,7 +24,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MONTHLY EXPENSES TRACKER',
+      title: title,
       theme: ThemeData(
         colorScheme: .fromSeed(seedColor: Colors.amber),
         textTheme: GoogleFonts.lexendTextTheme(),
@@ -165,7 +167,7 @@ class _MyHomePageState extends State<MyHomePage> {
             foregroundColor: theme.colorScheme.primary,
             backgroundColor: theme.colorScheme.inversePrimary,
             title: Text(
-              'MONTHLY EXPENSES TRACKER',
+              title,
               style: theme.textTheme.headlineSmall?.copyWith(
                 color: theme.primaryColor,
               ),
