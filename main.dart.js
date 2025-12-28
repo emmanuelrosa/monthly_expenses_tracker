@@ -92469,7 +92469,7 @@ A.U3.prototype={}
 A.ND.prototype={
 J(a){var s=null,r=A.qT(s,A.aEb(B.a4,s,s,B.Kb),A.b_c().$0(),s),q=new A.zk(new A.B0(s),s)
 q.d=A.bJ(s,t.Ue)
-return new A.AN(q,"MONTHLY EXPENSES TRACKER",r,s)}}
+return new A.AN(q,"EXPENSES TRACKER",r,s)}}
 A.B0.prototype={
 an(){return A.aVi()}}
 A.G4.prototype={
@@ -92565,7 +92565,7 @@ f=A.X(new A.ea(new A.aU(f,new A.asq(),d),new A.asr(),e),s)
 q=A.e5(o,new A.c6(l,new A.b8(300,o,A.e5(o,new A.Ny(r,f,o),B.w,g,o,o,o,o,o,o),o),o),B.w,m,o,o,o,o,o,o)
 l=h?j.c:i
 i=k.ok.f
-k=A.bm("MONTHLY EXPENSES TRACKER",o,o,o,i==null?o:i.aC(k.dx),o,o)
+k=A.bm("EXPENSES TRACKER",o,o,o,i==null?o:i.aC(k.dx),o,o)
 i=n?new A.Ln(q,o):o
 h=A.c([],t.p)
 if(!n)h.push(q)
