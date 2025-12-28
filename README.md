@@ -4,20 +4,21 @@
 
 A simple open-source expenses tracker.
 
-- **Easy to use:** At the end of the month, simply enter your expenses for the prior month. That's it.
-- **6 expense categories:** With only 6 categories to choose from, entering your expenses is quick and easy.
-- **Private data storage:** Your data is stored locally within your web browser.
-- **Monthly and yearly charts:** Easily view your expenses on a monthly or yearly basis, using the included charts.
+- **Easy to use:** At the end of the month, enter your expenses for the prior month. That's it.
+- **6 expense categories:** With only 6 categories to choose from, entering your expenses is painless.
+- **Monthly and yearly charts:** Keep an eye on your expenses so they don't get out of hand, using the included charts.
+- **Private data storage:** Your data is stored locally within your web browser. Nothing is shared with anyone.
+- **No vendor lock-in:** Import or export your expenses using a CSV file. Great for bulk data entry from Microsoft Excel or LibreOffice, and for backups.
+
+![Screenshot](screenshot-phone.png)
+
+![Screenshot](screenshot-tablet.png)
 
 ## Getting Started
 
-There's no need to sign up!
+No sign up required!
 
-Simply go to [https://emmanuelrosa.github.io/monthly_expenses_tracker/](https://emmanuelrosa.github.io/monthly_expenses_tracker/).
-
-## Build Notes
-
-- When building the web release for GitHub pages, you need to specify the base URL with the repository name. Ex: `flutter build web --base-href /monthly_expenses_tracker`
+Just go to [https://emmanuelrosa.github.io/monthly_expenses_tracker/](https://emmanuelrosa.github.io/monthly_expenses_tracker/).
 
 ## Credits
 
@@ -25,3 +26,9 @@ Simply go to [https://emmanuelrosa.github.io/monthly_expenses_tracker/](https://
 - I used [FontAwesome](https://fontawesome.com/) for some of the icons.
 - The main font comes from [Google Fonts](https://fonts.google.com/).
 - A lot of the functionality comes from various packages available at [pub.dev](https://pub.dev/).
+
+## Nerdy Notes
+
+### Build Notes
+
+- When building the web release for GitHub pages, you need to specify the base URL with the repository name. Ex: `flutter build web --base-href /monthly_expenses_tracker`
